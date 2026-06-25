@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Boot &amp; Hibernate - Academy Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* Course Theme Color Profile Palette (Spring Green Accent) */
+      --brand-primary: #34a853;
+      --brand-primary-glow: rgba(52, 168, 83, 0.15);
+      --brand-primary-hover: #2ca04c;
+      
+      --bg-main: #090a0f;
+      --bg-sidebar: #12131a;
+      --bg-card: #1c1e29;
+      --bg-card-hover: #252836;
+      --border-color: #2e3245;
+      
+      --text-main: #f3f4f6;
+      --text-muted: #8e96aa;
+      
+      /* Level Tracking / Difficulty Badge Color System */
+      --crit-color: #ef4444;
+      --crit-glow: rgba(239, 68, 68, 0.1);
+      --high-color: #f97316;
+      --high-glow: rgba(249, 115, 22, 0.1);
+      --med-color: #3b82f6;
+      --med-glow: rgba(59, 130, 246, 0.1);
+      --low-color: #10b981;
+      --low-color-glow: rgba(16, 185, 129, 0.1);
+      
+      --sidebar-width: 320px; 
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+    }
+
+    /* Layout Configurations */
+    .app-container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+      position: relative;
+    }
+
+    /* Left Navigation Panel Index */
+    aside {
+      width: var(--sidebar-width);
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      z-index: 10;
+      flex-shrink: 0; 
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .brand-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--brand-primary);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Search Component Controls Container Matrix */
+    .search-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-input {
+      width: 100%;
+      background-color: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      padding: 8px 12px 8px 32px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--brand-primary);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Scrollable Chapter Module Elements Matrix */
+    .toc-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 8px;
+    }
+
+    .toc-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .toc-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .toc-scroll::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+    }
+
+    .toc-item {
+      width: 100%;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+    }
+
+    .toc-item:hover {
+      background-color: var(--bg-card);
+      border-color: var(--border-color);
+    }
+
+    .toc-item.active {
+      background-color: var(--brand-primary-glow);
+      border-color: var(--brand-primary);
+    }
+
+    .toc-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .toc-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--brand-primary);
+    }
+
+    .toc-item.active .toc-num {
+      color: var(--brand-primary-hover);
+    }
+
+    .severity-badge {
+      font-size: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      padding: 1px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+
+    .badge-core { background-color: var(--low-color-glow); color: var(--low-color); }
+    .badge-intermediate { background-color: var(--med-glow); color: var(--med-color); }
+    .badge-advanced { background-color: var(--high-glow); color: var(--high-color); }
+    .badge-expert { background-color: var(--crit-glow); color: var(--crit-color); }
+
+    .toc-title {
+      font-size: 12.5px; 
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.35;
+    }
+
+    .toc-footer-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10.5px;
+      color: var(--text-muted);
+    }
+
+    .no-results-msg {
+      padding: 24px 12px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      display: none;
+    }
+
+    /* Right Main Display Sandbox Frame */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background-color: var(--bg-main);
+      position: relative;
+      min-width: 0; 
+    }
+
+    /* Sub-header Navigation Bar Grid */
+    .content-header {
+      height: 60px; 
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background-color: rgba(9, 10, 15, 0.7);
+      backdrop-filter: blur(12px);
+      z-index: 5;
+    }
+
+    .header-left-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .incident-nav-meta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .incident-id-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .incident-subject {
+      font-size: 14px; 
+      font-weight: 600;
+      color: var(--text-main);
+      margin-top: 1px;
+    }
+
+    .action-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .btn:hover {
+      background-color: var(--bg-card-hover);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .btn-primary {
+      background-color: var(--brand-primary);
+      border-color: var(--brand-primary);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--brand-primary-hover);
+      border-color: var(--brand-primary-hover);
+    }
+
+    /* HTML Embed Frame Block Container */
+    .workspace-frame-wrapper {
+      flex: 1;
+      position: relative;
+      background-color: #14151f;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background-color: #fffdf9;
+    }
+
+    .loader-mask {
+      position: absolute;
+      inset: 0;
+      background-color: var(--bg-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 8;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .loader-mask.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2.5px solid var(--border-color);
+      border-top-color: var(--brand-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loader-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Responsive Queries Configurations */
+    @media (max-width: 1024px) {
+      aside {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+      }
+
+      aside.mobile-open {
+        transform: translateX(0);
+        box-shadow: 24px 0 48px rgba(0,0,0,0.8);
+      }
+
+      .mobile-menu-toggle {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <aside id="dashboardSidebar">
+      <div class="sidebar-header">
+        <div class="brand-title-wrap">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2 3h20v4H2zm2 14h7v4H4zm11 0h7v4h-7zm-11-7h7v4H4zm11 0h7v4h-7z"/>
+          </svg>
+          <span class="brand-title">Spring &amp; Hibernate 4</span>
+        </div>
+        
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="menuSearchInput" class="search-input" placeholder="Search menu modules..." oninput="filterMenuItems()">
+        </div>
+      </div>
+
+      <div class="toc-scroll" id="tocContainer">
+        <div class="no-results-msg" id="noResultsMessage">No matching lectures found</div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="content-header">
+        <div class="header-left-group">
+          <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+            <span id="toggleButtonText">View Menu</span>
+          </button>
+          <div class="incident-nav-meta">
+            <span class="incident-id-tag" id="currentIdTag">MODULE // SB-HIB-01</span>
+            <h1 class="incident-subject" id="currentSubject">Introduction</h1>
+          </div>
+        </div>
+
+        <div class="action-controls">
+          <button class="btn" onclick="navigateIncident(-1)">
+            &larr; Previous
+          </button>
+          <button class="btn" onclick="navigateIncident(1)">
+            Next &rarr;
+          </button>
+          <button class="btn btn-primary" onclick="copyFileLink()">
+            Copy Link
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace-frame-wrapper">
+        <div class="loader-mask" id="iframeLoader">
+          <div class="spinner"></div>
+          <span class="loader-text">Loading Curriculum Elements...</span>
+        </div>
+        <iframe id="displaySandbox" src="about:blank" onload="onFrameLoad()"></iframe>
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    // Complete Course Dataset Architecture Mapping Matrix
+    const incidents = [
+      { id: "SB-HIB-01", subject: "Introduction", file: "lecture_1.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-02", subject: "How To Take This Course and How To Get Help", file: "lecture_2.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-03", subject: "Downloading the Source Code, PDFs and Course Links", file: "lecture_3.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-04", subject: "Java Development Environment Checkpoint", file: "lecture_4.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-05", subject: "Spring Boot Overview", file: "lecture_5.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-06", subject: "Spring Boot Initializr Demo", file: "lecture_6.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-07", subject: "Spring Boot - Create a REST Controller", file: "lecture_7.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-08", subject: "Spring Projects", file: "lecture_8.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-09", subject: "What is Maven?", file: "lecture_9.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-10", subject: "Maven Project Structure", file: "lecture_10.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-11", subject: "Maven Key Concepts", file: "lecture_11.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-12", subject: "Exploring Spring Boot Project Files - Part 1", file: "lecture_12.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-13", subject: "Exploring Spring Boot Project Files - Part 2", file: "lecture_13.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-14", subject: "Spring Boot Starters", file: "lecture_14.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-15", subject: "Spring Boot Parents for Starters", file: "lecture_15.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-16", subject: "Spring Boot Dev Tools - Overview", file: "lecture_16.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-17", subject: "Spring Boot Dev Tools - Coding", file: "lecture_17.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-18", subject: "Spring Boot Actuator - Overview", file: "lecture_18.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-19", subject: "Spring Boot Actuator - Accessing Endpoints - Part 1", file: "lecture_19.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-20", subject: "Spring Boot Actuator - Accessing Endpoints - Part 2", file: "lecture_20.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-21", subject: "Spring Boot Actuator - Securing Endpoints - Overview", file: "lecture_21.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-22", subject: "Spring Boot Actuator - Securing Endpoints - Coding", file: "lecture_22.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-23", subject: "Run Spring Boot Apps from the Command Line - Overview", file: "lecture_23.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-24", subject: "Run Spring Boot Apps from the Command Line - Prep", file: "lecture_24.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-25", subject: "Run Spring Boot Apps from the Command Line - Microsoft Windows", file: "lecture_25.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-26", subject: "Run Spring Boot Apps from the Command Line - macOS / Linux", file: "lecture_26.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-27", subject: "Injecting Custom Application Properties - Overview", file: "lecture_27.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-28", subject: "Injecting Custom Application Properties - Coding", file: "lecture_28.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-29", subject: "Configuring the Spring Boot Server - Overview", file: "lecture_29.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-30", subject: "Configuring the Spring Boot Server - Coding", file: "lecture_30.html", duration: "Muted", badge: "Core", bClass: "badge-core" },
+      { id: "SB-HIB-31", subject: "Hibernate / JPA Overview", file: "lecture_31.html", duration: "9:20", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-32", subject: "Hibernate, JPA and JDBC", file: "lecture_32.html", duration: "1:06", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-33", subject: "Setting Up Development Environment", file: "lecture_33.html", duration: "1:49", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-34", subject: "Setting Up Database Table - Overview", file: "lecture_34.html", duration: "1:02", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-35", subject: "Setting Up Database Table - Coding", file: "lecture_35.html", duration: "5:45", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-36", subject: "Setting Up Spring Boot Project - Overview", file: "lecture_36.html", duration: "3:25", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-37", subject: "Setting Up Spring Boot Project - Coding - Part 1", file: "lecture_37.html", duration: "5:17", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-38", subject: "Setting Up Spring Boot Project - Coding - Part 2", file: "lecture_38.html", duration: "7:46", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-39", subject: "JPA Annotations - Overview", file: "lecture_39.html", duration: "8:10", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-40", subject: "JPA Annotations - Coding", file: "lecture_40.html", duration: "7:55", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-41", subject: "Saving a Java Object with JPA - Overview - Part 1", file: "lecture_41.html", duration: "7:33", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-42", subject: "Saving a Java Object with JPA - Overview - Part 2", file: "lecture_42.html", duration: "5:05", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-43", subject: "Saving a Java Object with JPA - Coding - Part 1", file: "lecture_43.html", duration: "5:40", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-44", subject: "Saving a Java Object with JPA - Coding - Part 2", file: "lecture_44.html", duration: "5:24", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-45", subject: "Primary Keys", file: "lecture_45.html", duration: "5:25", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-46", subject: "Changing Index of MySQL Auto Increment", file: "lecture_46.html", duration: "3:20", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-47", subject: "Reading Objects with JPA - Overview", file: "lecture_47.html", duration: "3:02", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-48", subject: "Reading Objects with JPA - Coding", file: "lecture_48.html", duration: "6:40", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-49", subject: "Querying Objects with JPA - Overview", file: "lecture_49.html", duration: "8:13", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-50", subject: "Querying Objects with JPA - Coding - Part 1", file: "lecture_50.html", duration: "9:07", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-51", subject: "Querying Objects with JPA - Coding - Part 2", file: "lecture_51.html", duration: "6:46", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-52", subject: "Updating Objects with JPA - Overview", file: "lecture_52.html", duration: "3:27", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-53", subject: "Updating Objects with JPA - Coding", file: "lecture_53.html", duration: "6:27", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-54", subject: "Deleting Objects with JPA - Overview", file: "lecture_54.html", duration: "3:46", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-55", subject: "Deleting Objects with JPA - Coding - Part 1", file: "lecture_55.html", duration: "5:04", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-56", subject: "Deleting Objects with JPA - Coding - Part 2", file: "lecture_56.html", duration: "4:38", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-57", subject: "Create Database Tables from Java Code - Overview", file: "lecture_57.html", duration: "5:40", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-58", subject: "Create Database Tables from Java Code - Coding - Part 1", file: "lecture_58.html", duration: "5:02", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-59", subject: "Create Database Tables from Java Code - Coding - Part 2", file: "lecture_59.html", duration: "5:01", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-60", subject: "What Are REST Services - Part 1", file: "lecture_60.html", duration: "5:19", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-61", subject: "What Are REST Services - Part 2", file: "lecture_61.html", duration: "4:03", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-62", subject: "JSON Basics", file: "lecture_62.html", duration: "3:39", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-63", subject: "Spring Boot REST HTTP Basics", file: "lecture_63.html", duration: "7:00", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-64", subject: "Postman Demo", file: "lecture_64.html", duration: "4:13", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-65", subject: "Spring Boot REST Controller - Overview - Part 1", file: "lecture_65.html", duration: "3:06", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-66", subject: "Spring Boot REST Controller - Overview - Part 2", file: "lecture_66.html", duration: "1:09", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-67", subject: "Spring Boot Rest Controller - Coding", file: "lecture_67.html", duration: "8:17", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-HIB-68", subject: "JSON Jackson Data Binding", file: "lecture_68.html", duration: "6:40", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-69", subject: "Spring Boot REST POJO - Overview", file: "lecture_69.html", duration: "6:17", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-70", subject: "Spring Boot REST POJO - Coding - Part 1", file: "lecture_70.html", duration: "2:28", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-71", subject: "Spring Boot REST POJO - Coding - Part 2", file: "lecture_71.html", duration: "6:25", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-72", subject: "Spring Boot REST Path Variables - Overview", file: "lecture_72.html", duration: "4:22", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-73", subject: "Spring Boot REST Path Variables - Coding - Part 1", file: "lecture_73.html", duration: "4:12", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-74", subject: "Spring Boot REST Path Variables - Coding - Part 2", file: "lecture_74.html", duration: "4:35", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-HIB-75", subject: "Spring Boot REST Exception Handling - Overview - Part 1", file: "lecture_75.html", duration: "3:40", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-76", subject: "Spring Boot REST Exception Handling - Overview - Part 2", file: "lecture_76.html", duration: "4:31", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-77", subject: "Spring Boot REST Exception Handling - Coding - Part 1", file: "lecture_77.html", duration: "4:44", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-78", subject: "Spring Boot REST Exception Handling - Coding - Part 2", file: "lecture_78.html", duration: "6:59", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-79", subject: "Spring Boot REST Exception Handling - Coding - Part 3", file: "lecture_79.html", duration: "3:21", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-80", subject: "Spring Boot REST Exception Handling - Coding - Part 4", file: "lecture_80.html", duration: "4:27", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-81", subject: "Spring Boot REST Global Exception Handling - Overview", file: "lecture_81.html", duration: "5:24", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-82", subject: "Spring Boot REST Global Exception Handling - Coding", file: "lecture_82.html", duration: "3:36", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-83", subject: "Spring Boot REST API Design - Best Practices", file: "lecture_83.html", duration: "4:57", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-84", subject: "Spring Boot REST API Design - API Design of Real-Time Projects", file: "lecture_84.html", duration: "3:34", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-85", subject: "Spring Boot REST Project Overview", file: "lecture_85.html", duration: "1:57", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-86", subject: "Spring Boot REST Setup Sample Data", file: "lecture_86.html", duration: "3:48", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-87", subject: "Spring Boot REST Create Project", file: "lecture_87.html", duration: "4:17", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-88", subject: "Spring Boot REST DAO", file: "lecture_88.html", duration: "2:07", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-89", subject: "Spring Boot REST DAO - Coding - Part 1", file: "lecture_89.html", duration: "9:50", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-90", subject: "Spring Boot REST DAO - Coding - Part 2", file: "lecture_90.html", duration: "5:43", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-91", subject: "Spring Boot REST DAO - Coding - Part 3", file: "lecture_91.html", duration: "5:28", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-92", subject: "Spring Boot Define Service Layer - Overview", file: "lecture_92.html", duration: "3:48", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-93", subject: "Spring Boot Define Service Layer - Coding", file: "lecture_93.html", duration: "6:31", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-94", subject: "Spring Boot DAO: Add, Update, Delete - Overview", file: "lecture_94.html", duration: "3:42", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-95", subject: "Spring Boot DAO: Add, Update, Delete - Coding", file: "lecture_95.html", duration: "6:25", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-96", subject: "Spring Boot Service: Add, Update, Delete - Coding", file: "lecture_96.html", duration: "3:45", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-97", subject: "Spring Boot REST: Get Single Employee - Coding", file: "lecture_97.html", duration: "7:55", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-98", subject: "Spring Boot REST: Add Employee - Coding", file: "lecture_98.html", duration: "6:35", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-99", subject: "Spring Boot REST: Update Employee - Coding", file: "lecture_99.html", duration: "6:19", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-100", subject: "Spring Boot REST: PATCH - Overview - Part 1", file: "lecture_100.html", duration: "3:32", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-101", subject: "Spring Boot REST: PATCH - Overview - Part 2", file: "lecture_101.html", duration: "5:47", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-102", subject: "Spring Boot REST: PATCH - Coding - Part 1", file: "lecture_102.html", duration: "5:49", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-103", subject: "Spring Boot REST: PATCH - Coding - Part 2", file: "lecture_103.html", duration: "1:29", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-104", subject: "Spring Boot REST: PATCH - Coding - Part 3", file: "lecture_104.html", duration: "5:50", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-105", subject: "Spring Boot REST: Delete Employee - Coding", file: "lecture_105.html", duration: "5:25", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-106", subject: "Spring Boot REST: Spring Data JPA - Overview", file: "lecture_106.html", duration: "8:17", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-107", subject: "Spring Boot REST: Spring Data JPA - Coding - Part 1", file: "lecture_107.html", duration: "11:31", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-108", subject: "Spring Boot REST: Spring Data JPA - Coding - Part 2", file: "lecture_108.html", duration: "4:32", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-109", subject: "Spring Boot REST: Spring Data REST - Overview", file: "lecture_109.html", duration: "8:28", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-110", subject: "Spring Boot REST: Spring Data REST - Coding - Part 1", file: "lecture_110.html", duration: "6:03", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-111", subject: "Spring Boot REST: Spring Data REST - Coding - Part 2", file: "lecture_111.html", duration: "7:21", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-112", subject: "Spring Boot REST: Spring Data REST Configs and Sorting - Overview", file: "lecture_112.html", duration: "4:15", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-113", subject: "Spring Boot REST: Spring Data REST Configs and Sorting - Coding", file: "lecture_113.html", duration: "6:05", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-114", subject: "Spring Boot REST: OpenAPI and Swagger - Overview", file: "lecture_114.html", duration: "7:21", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-115", subject: "Spring Boot REST: OpenAPI and Swagger - Coding - Part 1", file: "lecture_115.html", duration: "4:54", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-116", subject: "Spring Boot REST: OpenAPI and Swagger - Coding - Part 2", file: "lecture_116.html", duration: "4:17", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-117", subject: "Spring Boot REST: OpenAPI and Swagger - Coding - Part 3", file: "lecture_117.html", duration: "4:06", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-HIB-118", subject: "Spring Boot REST: OpenAPI and Swagger - Coding - Part 4", file: "lecture_118.html", duration: "Muted", badge: "Expert", bClass: "badge-expert" },
+
+      // NEW ENTRIES LINKED EXTRACTED STRUCTURAL MATRIX BLOCKS
+      { id: "SB-SEC-119", subject: "Spring Boot REST API Security Overview", file: "lecture_119.html", duration: "6:47", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-120", subject: "Spring Boot REST API Security - Coding - Part 1", file: "lecture_120.html", duration: "4:21", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-121", subject: "Spring Boot REST API Security - Coding - Part 2", file: "lecture_121.html", duration: "5:24", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-122", subject: "Spring Boot REST API Security - Basic Configuration - Overview", file: "lecture_122.html", duration: "3:23", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-123", subject: "Spring Boot REST API Security - Basic Configuration - Coding", file: "lecture_123.html", duration: "8:18", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-124", subject: "Spring Boot REST API Security - Restrict URLs based on Roles - Overview", file: "lecture_124.html", duration: "8:31", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-125", subject: "Spring Boot REST API Security - Restrict URLs based on Roles - Coding - Part 1", file: "lecture_125.html", duration: "6:21", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-126", subject: "Spring Boot REST API Security - Restrict URLs based on Roles - Coding - Part 2", file: "lecture_126.html", duration: "6:46", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-127", subject: "Spring Boot REST API Security - Restrict URLs based on Roles - Coding - Part 3", file: "lecture_127.html", duration: "5:10", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-128", subject: "403 ERROR with PUT REQUEST - Spring Data REST", file: "lecture_128.html", duration: "1:23", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-129", subject: "Spring Boot REST API Security - PATCH - Overview", file: "lecture_129.html", duration: "1:13", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-130", subject: "Spring Boot REST API Security - PATCH - Coding", file: "lecture_130.html", duration: "4:53", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-131", subject: "Spring Boot REST API Security - JDBC Authentication - Plain Text - Overview", file: "lecture_131.html", duration: "6:57", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-132", subject: "Spring Boot REST API Security - JDBC Authentication - Plain Text - Coding Part 1", file: "lecture_132.html", duration: "5:28", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-133", subject: "Spring Boot REST API Security - JDBC Authentication - Plain Text - Coding Part 2", file: "lecture_133.html", duration: "4:28", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-134", subject: "Spring Boot REST API Security - JDBC Authentication - Plain Text - Coding Part 3", file: "lecture_134.html", duration: "4:45", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-135", subject: "Spring Boot REST API Security - BCrypt Encryption - Overview - Part 1", file: "lecture_135.html", duration: "5:04", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-136", subject: "Spring Boot REST API Security - BCrypt Encryption - Overview - Part 2", file: "lecture_136.html", duration: "3:59", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-137", subject: "Spring Boot REST API Security - BCrypt Encryption - Coding", file: "lecture_137.html", duration: "7:12", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-138", subject: "Spring Boot REST API Security - JDBC Authentication - Custom Tables - Overview", file: "lecture_138.html", duration: "3:37", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-139", subject: "Spring Boot REST API Security -Custom Tables - Coding - Part 1", file: "lecture_139.html", duration: "4:04", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-140", subject: "Spring Boot REST API Security -Custom Tables - Coding - Part 2", file: "lecture_140.html", duration: "5:31", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-141", subject: "Spring Boot REST API Security -Custom Tables - Coding - Part 3", file: "lecture_141.html", duration: "6:21", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-SEC-142", subject: "FAQ: Spring Boot REST API Security - Custom Tables with JPA/Hibernate", file: "lecture_142.html", duration: "0:11", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVC-143", subject: "Spring Boot - Spring MVC with Thymeleaf - Overview", file: "lecture_143.html", duration: "5:22", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-144", subject: "Spring Boot - Spring MVC with Thymeleaf - Coding - Part 1", file: "lecture_144.html", duration: "3:21", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-145", subject: "Spring Boot - Spring MVC with Thymeleaf - Coding - Part 2", file: "lecture_145.html", duration: "6:24", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-146", subject: "Spring Boot - Spring MVC with Thymeleaf and CSS - Overview", file: "lecture_146.html", duration: "4:23", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-147", subject: "Spring Boot - Spring MVC with Thymeleaf and CSS - Coding", file: "lecture_147.html", duration: "3:13", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-148", subject: "Spring Boot - Spring MVC Behind the Scenes", file: "lecture_148.html", duration: "5:04", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-149", subject: "Spring Boot - Hello World Form and Model Overview", file: "lecture_149.html", duration: "2:50", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-150", subject: "Spring Boot - Hello World Form and Model - Coding - Part 1", file: "lecture_150.html", duration: "5:50", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-151", subject: "Spring Boot - Hello World Form and Model - Coding - Part 2", file: "lecture_151.html", duration: "6:34", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-152", subject: "Spring Boot - Adding Data to Spring MVC Model - Overview", file: "lecture_152.html", duration: "5:35", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-153", subject: "Spring Boot - Adding Data to Spring MVC Model - Coding - Part 1", file: "lecture_153.html", duration: "5:04", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-154", subject: "Spring Boot - Adding Data to Spring MVC Model - Coding - Part 2", file: "lecture_154.html", duration: "3:15", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-155", subject: "Spring Boot - Spring MVC Binding Request Params - Overview", file: "lecture_155.html", duration: "1:35", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-156", subject: "Spring Boot - Spring MVC Binding Request Params - Coding", file: "lecture_156.html", duration: "5:24", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-157", subject: "Spring Boot - GetMapping and PostMapping - Overview", file: "lecture_157.html", duration: "4:32", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-158", subject: "Spring Boot - GetMapping and PostMapping - Coding - Part 1", file: "lecture_158.html", duration: "4:04", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-MVC-159", subject: "Spring Boot - GetMapping and PostMapping - Coding - Part 2", file: "lecture_159.html", duration: "7:00", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-160", subject: "Spring Boot - Spring MVC Form Data Binding - Text Fields - Overview", file: "lecture_160.html", duration: "8:02", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-161", subject: "Spring Boot - Spring MVC Form Data Binding - Text Fields - Coding - Part 1", file: "lecture_161.html", duration: "5:28", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-162", subject: "Spring Boot - Spring MVC Form Data Binding - Text Fields - Coding - Part 2", file: "lecture_162.html", duration: "7:36", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-163", subject: "Spring Boot - Spring MVC Form Data Binding - Text Fields - Coding - Part 3", file: "lecture_163.html", duration: "3:32", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-164", subject: "Spring Boot - Spring MVC Form Data Binding - Drop-Down Lists - Overview", file: "lecture_164.html", duration: "2:26", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-165", subject: "Spring Boot - Spring MVC Form Data Binding - Drop-Down Lists - Coding - Part 1", file: "lecture_165.html", duration: "5:41", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-166", subject: "Spring Boot - Spring MVC Form Data Binding - Drop-Down Lists - Coding - Part 2", file: "lecture_166.html", duration: "8:17", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-167", subject: "Spring Boot - Spring MVC Form Data Binding - Radio Buttons - Overview", file: "lecture_167.html", duration: "1:46", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-168", subject: "Spring Boot - Spring MVC Form Data Binding - Radio Buttons - Coding - Part 1", file: "lecture_168.html", duration: "5:30", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-169", subject: "Spring Boot - Spring MVC Form Data Binding - Radio Buttons - Coding - Part 2", file: "lecture_169.html", duration: "6:33", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-170", subject: "Spring Boot - Spring MVC Form Data Binding - Check Boxes - Overview", file: "lecture_170.html", duration: "1:29", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-171", subject: "Spring Boot - Spring MVC Form Data Binding - Check Boxes - Coding - Part 1", file: "lecture_171.html", duration: "9:22", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-172", subject: "Spring Boot - Spring MVC Form Data Binding - Check Boxes - Coding - Part 2", file: "lecture_172.html", duration: "5:39", badge: "Intermediate", bClass: "badge-intermediate" },
+      { id: "SB-VAL-173", subject: "Spring Boot - Spring MVC Validation - Overview", file: "lecture_173.html", duration: "2:23", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-174", subject: "Spring Boot - Spring MVC Validation - Setup Dev Environment", file: "lecture_174.html", duration: "4:32", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-175", subject: "Spring Boot - Spring MVC Validation - Required Fields - Overview", file: "lecture_175.html", duration: "6:20", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-176", subject: "Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 1", file: "lecture_176.html", duration: "3:42", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-177", subject: "Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 2", file: "lecture_177.html", duration: "2:56", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-178", subject: "Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 3", file: "lecture_178.html", duration: "8:36", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-179", subject: "Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 4", file: "lecture_179.html", duration: "4:00", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-180", subject: "Spring Boot - Spring MVC Validation - Required Fields - Coding - Part 5", file: "lecture_180.html", duration: "7:39", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-181", subject: "Spring Boot - Spring MVC Validation - @InitBinder - Overview", file: "lecture_181.html", duration: "3:55", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-182", subject: "Spring Boot - Spring MVC Validation - @InitBinder - Coding", file: "lecture_182.html", duration: "6:37", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-183", subject: "Spring Boot - Spring MVC Validation - Validate a Number Range - Overview", file: "lecture_183.html", duration: "2:36", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-184", subject: "Spring Boot - Spring MVC Validation - Validate a Number Range - Coding", file: "lecture_184.html", duration: "6:57", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-185", subject: "Spring Boot - Spring MVC Validation - Applying Regular Expressions - Overview", file: "lecture_185.html", duration: "2:20", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-186", subject: "Spring Boot - Spring MVC Validation - Applying Regular Expressions - Coding", file: "lecture_186.html", duration: "6:37", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-187", subject: "Spring Boot - Spring MVC Validation - Make Integer Fields Required", file: "lecture_187.html", duration: "5:33", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-188", subject: "Spring Boot - Spring MVC Validation - Strings for Int Fields and Custom Messages", file: "lecture_188.html", duration: "4:46", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-189", subject: "Spring Boot - Spring MVC Validation - Debugging Tips for Custom Error Names", file: "lecture_189.html", duration: "5:04", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-190", subject: "Spring Boot - Spring MVC Validation - Custom Validation - Overview - Part 1", file: "lecture_190.html", duration: "4:01", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-191", subject: "Spring Boot - Spring MVC Validation - Custom Validation - Overview - Part 2", file: "lecture_191.html", duration: "5:53", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-192", subject: "Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 1", file: "lecture_192.html", duration: "3:21", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-193", subject: "Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 2", file: "lecture_193.html", duration: "4:14", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-194", subject: "Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 3", file: "lecture_194.html", duration: "5:28", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-195", subject: "Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 4", file: "lecture_195.html", duration: "4:23", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-VAL-196", subject: "Spring Boot - Spring MVC Validation - Custom Validation - Coding - Part 5", file: "lecture_196.html", duration: "4:23", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-197", subject: "CRUD Database Project - Overview", file: "lecture_197.html", duration: "2:24", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-198", subject: "CRUD Database Project - Set up", file: "lecture_198.html", duration: "4:31", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-199", subject: "CRUD Database Project - Get Employees - Coding - Part 1", file: "lecture_199.html", duration: "5:23", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-200", subject: "CRUD Database Project - Get Employees - Coding - Part 2", file: "lecture_200.html", duration: "3:35", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-201", subject: "CRUD Database Project - Get Employees - Coding - Part 3", file: "lecture_201.html", duration: "6:38", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-202", subject: "CRUD Database Project - Get Employees - Coding - Part 4", file: "lecture_202.html", duration: "4:45", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-203", subject: "CRUD Database Project - Add Employees - Overview", file: "lecture_203.html", duration: "8:27", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-204", subject: "CRUD Database Project - Add Employee - Coding - Part 1", file: "lecture_204.html", duration: "5:20", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-205", subject: "CRUD Database Project - Add Employee - Coding - Part 2", file: "lecture_205.html", duration: "8:55", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-206", subject: "CRUD Database Project - Add Employee - Coding - Part 3", file: "lecture_206.html", duration: "8:35", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-207", subject: "CRUD Database Project - Update Employee - Overview", file: "lecture_207.html", duration: "4:12", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-208", subject: "CRUD Database Project - Update Employee - Coding", file: "lecture_208.html", duration: "8:52", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-209", subject: "CRUD Database Project - Delete Employee - Overview", file: "lecture_209.html", duration: "2:50", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-DB-210", subject: "CRUD Database Project - Delete Employee - Coding", file: "lecture_210.html", duration: "Muted", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-MVCSEC-211", subject: "Spring MVC Security - Overview", file: "lecture_211.html", duration: "7:55", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-212", subject: "Spring MVC Security - Demo", file: "lecture_212.html", duration: "2:45", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-213", subject: "Spring MVC Security - Project Set Up - Part 1", file: "lecture_213.html", duration: "5:44", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-214", subject: "Spring MVC Security - Project Set Up - Part 2", file: "lecture_214.html", duration: "6:22", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-215", subject: "Spring MVC Security - Dev Testing with Private/Incognito Windows", file: "lecture_215.html", duration: "6:13", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-216", subject: "Spring MVC Security - Basic Configuration - Overview", file: "lecture_216.html", duration: "3:23", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-217", subject: "Spring MVC Security - Basic Configuration - Coding", file: "lecture_217.html", duration: "6:13", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-218", subject: "Spring MVC Security - Custom Login Form - Overview - Part 1", file: "lecture_218.html", duration: "4:46", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-219", subject: "Spring MVC Security - Custom Login Form - Overview - Part 2", file: "lecture_219.html", duration: "4:34", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-220", subject: "Spring MVC Security - Custom Login Form - Coding - Part 1", file: "lecture_220.html", duration: "4:39", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-221", subject: "Spring MVC Security - Custom Login Form - Coding - Part 2", file: "lecture_221.html", duration: "8:15", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-222", subject: "Spring MVC Security - Custom Login Form - Coding - Part 3", file: "lecture_222.html", duration: "2:15", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-223", subject: "Spring MVC Security - Login Form Error Message - Overview", file: "lecture_223.html", duration: "2:40", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-224", subject: "Spring MVC Security - Login Form Error Message - Coding", file: "lecture_224.html", duration: "6:04", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-225", subject: "Spring MVC Security - Custom Login Form with Bootstrap - Overview", file: "lecture_225.html", duration: "1:53", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-226", subject: "Spring MVC Security - Custom Login Form with Bootstrap - Coding", file: "lecture_226.html", duration: "7:08", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-227", subject: "Spring MVC Security - Logout - Overview", file: "lecture_227.html", duration: "2:52", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-228", subject: "Spring MVC Security - Logout - Coding", file: "lecture_228.html", duration: "7:00", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-229", subject: "Spring MVC Security - Display User ID and Roles - Overview", file: "lecture_229.html", duration: "1:31", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-230", subject: "Spring MVC Security - Display User ID and Roles - Coding", file: "lecture_230.html", duration: "5:50", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-231", subject: "Spring MVC Security - Restrict URLs Based on Roles - Overview", file: "lecture_231.html", duration: "4:37", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-232", subject: "Spring MVC Security - Restrict URLs Based on Roles - Coding - Part 1", file: "lecture_232.html", duration: "3:31", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-233", subject: "Spring MVC Security - Restrict URLs Based on Roles - Coding - Part 2", file: "lecture_233.html", duration: "7:21", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-234", subject: "Spring MVC Security - Restrict URLs Based on Roles - Coding - Part 3", file: "lecture_234.html", duration: "6:10", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-235", subject: "Spring MVC Security - Restrict URLs Based on Roles - Coding - Part 4", file: "lecture_235.html", duration: "7:37", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-236", subject: "Spring MVC Security - Custom Access Denied Page - Overview", file: "lecture_236.html", duration: "1:45", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-237", subject: "Spring MVC Security - Custom Access Denied Page - Coding - Part 1", file: "lecture_237.html", duration: "3:18", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-238", subject: "Spring MVC Security - Custom Access Denied Page - Coding - Part 2", file: "lecture_238.html", duration: "3:28", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-239", subject: "Spring MVC Security - Display Content Based on Roles - Overview", file: "lecture_239.html", duration: "2:23", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-240", subject: "Spring MVC Security - Display Content Based on Roles - Coding - Part 1", file: "lecture_240.html", duration: "4:17", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-241", subject: "Spring MVC Security - Display Content Based on Roles - Coding - Part 2", file: "lecture_241.html", duration: "4:49", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-242", subject: "Spring MVC Security - JDBC Authentication - Plain Text - Overview", file: "lecture_242.html", duration: "6:57", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-243", subject: "Spring MVC Security - JDBC Authentication - Plain Text - Coding - Part 1", file: "lecture_243.html", duration: "6:55", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-244", subject: "Spring MVC Security - JDBC Authentication - Plain Text - Coding - Part 2", file: "lecture_244.html", duration: "4:37", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-245", subject: "Spring MVC Security - JDBC Authentication - Plain Text - Coding - Part 3", file: "lecture_245.html", duration: "3:13", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-246", subject: "Spring MVC Security - JDBC Authentication - Plain Text - Coding - Part 4", file: "lecture_246.html", duration: "6:05", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-247", subject: "Spring MVC Security - JDBC Authentication - BCrypt Encryption - Overview Part 1", file: "lecture_247.html", duration: "5:04", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-248", subject: "Spring MVC Security - JDBC Authentication - BCrypt Encryption - Overview Part 2", file: "lecture_248.html", duration: "3:59", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-249", subject: "Spring MVC Security - JDBC Authentication - BCrypt Encryption - Coding", file: "lecture_249.html", duration: "3:48", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-250", subject: "Spring MVC Security - JDBC Authentication - Custom Tables - Overview", file: "lecture_250.html", duration: "3:37", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-251", subject: "Spring MVC Security - JDBC Authentication - Custom Tables - Coding - Part 1", file: "lecture_251.html", duration: "4:05", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-MVCSEC-252", subject: "Spring MVC Security - JDBC Authentication - Custom Tables - Coding - Part 2", file: "lecture_252.html", duration: "Muted", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-JPA-253", subject: "JPA / Hibernate Advanced Mappings Overview - Part 1", file: "lecture_253.html", duration: "2:56", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-254", subject: "JPA / Hibernate Advanced Mappings Overview - Part 2", file: "lecture_254.html", duration: "5:55", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-255", subject: "@OneToOne Mapping Overview - Part 1", file: "lecture_255.html", duration: "5:08", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-256", subject: "@OneToOne Mapping Overview - Part 2", file: "lecture_256.html", duration: "6:20", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-257", subject: "@OneToOne Mapping Overview - Part 3", file: "lecture_257.html", duration: "6:03", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-258", subject: "@OneToOne Mapping - Database Setup", file: "lecture_258.html", duration: "9:12", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-259", subject: "@OneToOne Mapping - Set up Spring Boot Project - Part 1", file: "lecture_259.html", duration: "4:46", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-260", subject: "@OneToOne Mapping - Set up Spring Boot Project - Part 2", file: "lecture_260.html", duration: "5:09", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-261", subject: "@OneToOne Mapping - Coding - Create InstructorDetail entity", file: "lecture_261.html", duration: "6:55", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-262", subject: "@OneToOne Mapping - Coding - Create Instructor entity", file: "lecture_262.html", duration: "7:38", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-263", subject: "@OneToOne Mapping - Coding - Create the DAO", file: "lecture_263.html", duration: "4:45", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-264", subject: "@OneToOne Mapping - Coding - Develop the Main App", file: "lecture_264.html", duration: "5:55", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-265", subject: "@OneToOne Mapping - Coding - Run the Main App", file: "lecture_265.html", duration: "5:26", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-266", subject: "@OneToOne Mapping - Find Instructor by ID", file: "lecture_266.html", duration: "6:41", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-267", subject: "@OneToOne Mapping - Delete Instructor by ID", file: "lecture_267.html", duration: "5:51", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-268", subject: "@OneToOne Mapping - Bi-Directional - Overview", file: "lecture_268.html", duration: "7:41", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-269", subject: "@OneToOne Mapping - Bi-Directional - Coding - Part 1", file: "lecture_269.html", duration: "7:07", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-270", subject: "@OneToOne Mapping - Bi-Directional - Coding - Part 2", file: "lecture_270.html", duration: "7:43", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-271", subject: "@OneToOne Mapping - Bi-Directional - Cascade Delete - Coding", file: "lecture_271.html", duration: "6:13", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-272", subject: "@OneToOne Mapping - Bi-Directional - Only Delete Instructor Details - Coding", file: "lecture_272.html", duration: "8:00", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-273", subject: "@OneToMany - Overview - Part 1", file: "lecture_273.html", duration: "4:13", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-274", subject: "@OneToMany - Overview - Part 2", file: "lecture_274.html", duration: "3:28", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-275", subject: "@OneToMany - Coding - Set Up Database Tables", file: "lecture_275.html", duration: "4:49", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-276", subject: "@OneToMany - Coding - Create Course entity", file: "lecture_276.html", duration: "5:59", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-277", subject: "@OneToMany - Coding - Annotate Course entity", file: "lecture_277.html", duration: "3:35", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-278", subject: "@OneToMany - Coding - Annotate Instructor entity", file: "lecture_278.html", duration: "5:25", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-279", subject: "@OneToMany - Coding - Create Main App", file: "lecture_279.html", duration: "3:39", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-280", subject: "@OneToMany - Coding - Finish Main App and Run It!", file: "lecture_280.html", duration: "7:37", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-281", subject: "@OneToMany - Fetch Types: Eager vs Lazy - Overview - Part 1", file: "lecture_281.html", duration: "3:17", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-282", subject: "@OneToMany - Fetch Types: Eager vs Lazy - Overview - Part 2", file: "lecture_282.html", duration: "4:25", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-283", subject: "@OneToMany: Fetch Types - Eager vs Lazy - Coding", file: "lecture_283.html", duration: "6:04", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-284", subject: "@OneToMany: Lazy Find Courses - Overview", file: "lecture_284.html", duration: "3:12", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-285", subject: "@OneToMany: Lazy Find Courses - Coding - Part 1", file: "lecture_285.html", duration: "5:21", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-286", subject: "@OneToMany: Lazy Find Courses - Coding - Part 2", file: "lecture_286.html", duration: "6:15", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-287", subject: "@OneToMany - JOIN FETCH Courses - Overview", file: "lecture_287.html", duration: "3:06", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-288", subject: "@OneToMany - JOIN FETCH Courses - Coding - Part 1", file: "lecture_288.html", duration: "4:17", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-289", subject: "@OneToMany - JOIN FETCH Courses - Coding - Part 2", file: "lecture_289.html", duration: "6:21", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-290", subject: "@OneToMany - Update Instructor", file: "lecture_290.html", duration: "8:25", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-291", subject: "@OneToMany - Update Course", file: "lecture_291.html", duration: "8:31", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-292", subject: "@OneToMany - Delete Instructor", file: "lecture_292.html", duration: "9:45", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-293", subject: "@OneToMany - Delete Course", file: "lecture_293.html", duration: "6:20", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-294", subject: "@OneToMany - Uni-Directional - Overview", file: "lecture_294.html", duration: "7:22", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-295", subject: "@OneToMany - Uni-Directional - Coding - Database Set Up", file: "lecture_295.html", duration: "3:15", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-296", subject: "@OneToMany - Uni-Directional - Coding - Create Review Entity", file: "lecture_296.html", duration: "8:14", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-297", subject: "@OneToMany - Uni-Directional - Coding - Refactor Course Entity", file: "lecture_297.html", duration: "4:07", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-298", subject: "@OneToMany - Uni-Directional - Coding - Update DAO and Main App", file: "lecture_298.html", duration: "8:12", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-299", subject: "@OneToMany - Uni-Directional - Coding - Retrieve Course and Reviews", file: "lecture_299.html", duration: "6:36", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-300", subject: "@OneToMany - Uni-Directional - Coding - Delete Course and Reviews", file: "lecture_300.html", duration: "3:00", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-301", subject: "@ManyToMany - Overview - Part 1", file: "lecture_301.html", duration: "4:55", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-302", subject: "@ManyToMany - Overview - Part 2", file: "lecture_302.html", duration: "6:01", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-303", subject: "@ManyToMany - Coding - Set up Database Tables", file: "lecture_303.html", duration: "5:02", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-304", subject: "@ManyToMany - Coding - Set up Spring Boot Project", file: "lecture_304.html", duration: "2:35", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-305", subject: "@ManyToMany - Coding - Create Student entity", file: "lecture_305.html", duration: "4:42", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-306", subject: "@ManyToMany - Coding - Map Course to Student", file: "lecture_306.html", duration: "6:46", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-307", subject: "@ManyToMany - Coding - Map Student to Course", file: "lecture_307.html", duration: "5:20", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-308", subject: "@ManyToMany - Coding - Create Course and Students", file: "lecture_308.html", duration: "7:32", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-309", subject: "@ManyToMany - Coding - Find Course and Students", file: "lecture_309.html", duration: "5:38", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-310", subject: "@ManyToMany - Coding - Find Student and Courses", file: "lecture_310.html", duration: "6:45", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-311", subject: "@ManyToMany - Coding - Add More Courses to Students", file: "lecture_311.html", duration: "8:35", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-312", subject: "@ManyToMany - Coding - Delete Course", file: "lecture_312.html", duration: "3:40", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-313", subject: "@ManyToMany - Coding - Delete Student", file: "lecture_313.html", duration: "6:58", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-JPA-314", subject: "Advanced Mappings Review Guide - Cheat Sheet", file: "lecture_314.html", duration: "Muted", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-315", subject: "OP - The Business Problem", file: "lecture_315.html", duration: "4:21", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-316", subject: "AOP Solution and AOP Use Cases", file: "lecture_316.html", duration: "4:09", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-317", subject: "AOP Concepts and Terminology", file: "lecture_317.html", duration: "5:12", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-318", subject: "Comparing Spring AOP and AspectJ - Part 1", file: "lecture_318.html", duration: "3:28", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-319", subject: "Comparing Spring AOP and AspectJ - Part 2", file: "lecture_319.html", duration: "2:49", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-320", subject: "AOP - @Before Advice - Overview - Part 1", file: "lecture_320.html", duration: "3:47", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-321", subject: "AOP - @Before Advice - Overview - Part 2", file: "lecture_321.html", duration: "5:14", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-322", subject: "AOP - @Before Advice - Coding - AOP Project Set Up", file: "lecture_322.html", duration: "7:34", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-323", subject: "AOP - @Before Advice - Coding - Create Target Object - AccountDAO", file: "lecture_323.html", duration: "6:22", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-324", subject: "AOP - @Before Advice - Coding - Create Aspect", file: "lecture_324.html", duration: "5:06", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-325", subject: "AOP - @Before Advice - Test the AOP Aspect", file: "lecture_325.html", duration: "4:01", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-326", subject: "AOP - Pointcut Expressions - Overview", file: "lecture_326.html", duration: "6:45", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-327", subject: "AOP - Pointcut Expressions - Coding - Match any addAccount Method - Part 1", file: "lecture_327.html", duration: "4:12", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-328", subject: "AOP - Pointcut Expressions - Coding - Match any addAccount Method - Part 2", file: "lecture_328.html", duration: "5:02", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-329", subject: "AOP - Pointcut Expressions - Coding - Match only AccountDAO addAccount", file: "lecture_329.html", duration: "3:31", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-330", subject: "AOP - Pointcut Expressions - Coding - Match any add* Method", file: "lecture_330.html", duration: "2:32", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-331", subject: "AOP - Pointcut Expressions - Coding - Match any Return Type", file: "lecture_331.html", duration: "4:08", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-332", subject: "AOP - Pointcut Expressions - Overview - Match on Method Parameters", file: "lecture_332.html", duration: "4:17", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-333", subject: "AOP - Pointcut Expressions - Coding - Match Method Parameter Types", file: "lecture_333.html", duration: "5:14", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-334", subject: "AOP - Pointcut Expressions - Coding - Match Method with Account and more Params", file: "lecture_334.html", duration: "3:33", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-335", subject: "AOP - Pointcut Expressions - Coding - Match Method with Any Params", file: "lecture_335.html", duration: "5:04", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-336", subject: "AOP - Pointcut Expressions - Coding - Match Any Method in a Package", file: "lecture_336.html", duration: "6:16", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-337", subject: "AOP: Pointcut Declarations - Overview", file: "lecture_337.html", duration: "4:04", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-338", subject: "AOP: Pointcut Declarations - Coding - Part 1", file: "lecture_338.html", duration: "5:37", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-339", subject: "AOP: Pointcut Declarations - Coding - Part 2", file: "lecture_339.html", duration: "3:12", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-340", subject: "AOP: Combining Pointcuts - Overview", file: "lecture_340.html", duration: "4:40", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-341", subject: "AOP: Combining Pointcuts - Coding - Part 1", file: "lecture_341.html", duration: "8:58", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-342", subject: "AOP: Combining Pointcuts - Coding - Part 2", file: "lecture_342.html", duration: "8:32", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-343", subject: "AOP: Ordering Aspects - Overview", file: "lecture_343.html", duration: "6:49", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-344", subject: "AOP: Ordering Aspects - Coding - Part 1", file: "lecture_344.html", duration: "5:12", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-345", subject: "AOP: Ordering Aspects - Coding - Part 2", file: "lecture_345.html", duration: "5:14", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-346", subject: "AOP: Ordering Aspects - Coding - Part 3", file: "lecture_346.html", duration: "8:44", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-347", subject: "AOP: Read Method Arguments with JoinPoints - Overview", file: "lecture_347.html", duration: "2:40", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-348", subject: "AOP: Read Method Arguments with JoinPoints - Coding - Part 1", file: "lecture_348.html", duration: "4:29", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-349", subject: "AOP: Read Method Arguments with JoinPoints - Coding - Part 2", file: "lecture_349.html", duration: "6:25", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-350", subject: "AOP: Progress Check", file: "lecture_350.html", duration: "0:44", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-351", subject: "AOP: @AfterReturning Advice - Overview", file: "lecture_351.html", duration: "6:17", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-352", subject: "AOP: @AfterReturning Advice - Coding - Part 1", file: "lecture_352.html", duration: "7:30", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-353", subject: "AOP: @AfterReturning Advice - Coding - Part 2", file: "lecture_353.html", duration: "4:03", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-354", subject: "AOP: @AfterReturning Advice - Coding - Part 3", file: "lecture_354.html", duration: "8:32", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-355", subject: "AOP: @AfterReturning Advice - Modify Return Value - Overview", file: "lecture_355.html", duration: "4:14", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-356", subject: "AOP: @AfterReturning Advice - Modify Return Value - Coding", file: "lecture_356.html", duration: "5:50", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-357", subject: "AOP: @AfterThrowing Advice - Overview", file: "lecture_357.html", duration: "6:51", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-358", subject: "AOP: @AfterThrowing Advice - Coding - Part 1", file: "lecture_358.html", duration: "8:23", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-359", subject: "AOP: @AfterThrowing Advice - Coding - Part 2", file: "lecture_359.html", duration: "5:31", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-360", subject: "AOP: @After Advice - Overview", file: "lecture_360.html", duration: "3:20", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-361", subject: "AOP: @After Advice - Coding", file: "lecture_361.html", duration: "5:56", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-362", subject: "AOP: @Around Advice - Overview", file: "lecture_362.html", duration: "5:33", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-363", subject: "AOP: @Around Advice - Coding - Part 1", file: "lecture_363.html", duration: "4:44", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-364", subject: "AOP: @Around Advice - Coding - Part 2", file: "lecture_364.html", duration: "6:04", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-365", subject: "AOP: @Around Advice - Coding - Part 3", file: "lecture_365.html", duration: "3:24", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-366", subject: "@Around Advice - Handle Exception - Overview", file: "lecture_366.html", duration: "4:41", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-367", subject: "@Around Advice - Handle Exception - Coding - Part 1", file: "lecture_367.html", duration: "5:33", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-368", subject: "@Around Advice - Handle Exception - Coding - Part 2", file: "lecture_368.html", duration: "7:27", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-369", subject: "AOP: @Around Advice - Rethrow Exception", file: "lecture_369.html", duration: "5:53", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-370", subject: "AOP: Integrating AOP with Spring MVC CRUD App - Overview", file: "lecture_370.html", duration: "3:09", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-371", subject: "AOP: Integrating AOP with Spring MVC CRUD App - Coding - Part 1", file: "lecture_371.html", duration: "4:53", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-372", subject: "AOP: Integrating AOP with Spring MVC CRUD App - Coding - Part 2", file: "lecture_372.html", duration: "3:37", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-373", subject: "AOP: Integrating AOP with Spring MVC CRUD App - Coding - Part 3", file: "lecture_373.html", duration: "7:01", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-374", subject: "AOP: Integrating AOP with Spring MVC CRUD App - Coding - Part 4", file: "lecture_374.html", duration: "4:19", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-AOP-375", subject: "AOP: Integrating AOP with Spring MVC CRUD App - Coding - Part 5", file: "lecture_375.html", duration: "4:19", badge: "Advanced", bClass: "badge-advanced" },
+      { id: "SB-V4-376", subject: "What's New in Spring Boot 4 - Overview - Part 1", file: "lecture_376.html", duration: "5:08", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-V4-377", subject: "What's New in Spring Boot 4 - Overview - Part 2", file: "lecture_377.html", duration: "5:54", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-V4-378", subject: "Course Migration Notes for AOP and Spring Boot 4 - Overview", file: "lecture_378.html", duration: "2:05", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-V4-379", subject: "Course Migration Notes for AOP and Spring Boot 4 - Coding", file: "lecture_379.html", duration: "4:15", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-V4-380", subject: "Course Migration Notes for Jackson PATCH and Spring Boot 4 - Overview", file: "lecture_380.html", duration: "3:31", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-V4-381", subject: "Course Migration Notes for Jackson PATCH and Spring Boot 4 - Coding - Part 1", file: "lecture_381.html", duration: "4:36", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-V4-382", subject: "Course Migration Notes for Jackson PATCH and Spring Boot 4 - Coding - Part 2", file: "lecture_382.html", duration: "3:49", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-V4-383", subject: "API Versioning in Spring Boot 4 - Overview", file: "lecture_383.html", duration: "7:57", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-V4-384", subject: "API Versioning in Spring Boot 4 - Coding - Part 1", file: "lecture_384.html", duration: "6:16", badge: "Expert", bClass: "badge-expert" },
+      { id: "SB-V4-385", subject: "API Versioning in Spring Boot 4 - Coding - Part 2", file: "lecture_385.html", duration: "6:16", badge: "Expert", bClass: "badge-expert" }
+    ];
+
+    let currentIncidentIndex = 0;
+
+    // Build & Hydrate Dynamic Side Navigation Array Nodes 
+    function initSidebar() {
+      const container = document.getElementById('tocContainer');
+      const fallback = document.getElementById('noResultsMessage');
+      
+      incidents.forEach((inc, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `toc-item${idx === 0 ? ' active' : ''}`;
+        btn.setAttribute('onclick', `openIncident(${idx})`);
+        
+        btn.innerHTML = `
+          <div class="toc-meta">
+            <span class="toc-num">${String(idx + 1).padStart(2, '0')}</span>
+            <span class="severity-badge ${inc.bClass}">${inc.badge}</span>
+          </div>
+          <div class="toc-title">${inc.subject}</div>
+          <div class="toc-footer-info"><span>${inc.duration !== "Muted" ? 'Duration: ' + inc.duration : 'Lecture ' + (idx + 1)}</span></div>
+        `;
+        container.insertBefore(btn, fallback);
+      });
+    }
+
+    // Filter Menu Items dynamic evaluation logic query match engine
+    function filterMenuItems() {
+      const filter = document.getElementById('menuSearchInput').value.toLowerCase();
+      const items = document.querySelectorAll('#tocContainer .toc-item');
+      let visibleCount = 0;
+
+      items.forEach((item) => {
+        const titleText = item.querySelector('.toc-title').textContent.toLowerCase();
+        if (titleText.includes(filter)) {
+          item.style.display = 'flex';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      const fallbackMsg = document.getElementById('noResultsMessage');
+      fallbackMsg.style.display = (visibleCount === 0) ? 'block' : 'none';
+    }
+
+    function openIncident(index) {
+      if (index < 0 || index >= incidents.length) return;
+      
+      currentIncidentIndex = index;
+      const target = incidents[index];
+
+      document.getElementById('currentIdTag').textContent = `MODULE // ${target.id}`;
+      document.getElementById('currentSubject').textContent = target.subject;
+
+      document.getElementById('iframeLoader').classList.remove('hidden');
+      document.getElementById('displaySandbox').src = target.file;
+
+      document.querySelectorAll('#tocContainer .toc-item').forEach((btn, idx) => {
+        if (idx === index) {
+          btn.classList.add('active');
+          btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      const sidebar = document.getElementById('dashboardSidebar');
+      if (sidebar.classList.contains('mobile-open')) {
+        toggleMobileSidebar();
+      }
+    }
+
+    function onFrameLoad() {
+      document.getElementById('iframeLoader').classList.add('hidden');
+    }
+
+    function navigateIncident(direction) {
+      let targetIndex = currentIncidentIndex + direction;
+      if (targetIndex >= 0 && targetIndex < incidents.length) {
+        openIncident(targetIndex);
+      }
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('dashboardSidebar');
+      const text = document.getElementById('toggleButtonText');
+      sidebar.classList.toggle('mobile-open');
+      text.textContent = sidebar.classList.contains('mobile-open') ? "Close Menu" : "View Menu";
+    }
+
+    function copyFileLink() {
+      if (currentIncidentIndex === -1) return;
+      const fullPath = window.location.origin + '/' + incidents[currentIncidentIndex].file;
+      navigator.clipboard.writeText(fullPath).then(() => {
+        alert(`Resource link copied successfully:\n${fullPath}`);
+      });
+    }
+
+    // Run structural instantiation loops on load lifecycle window
+    window.addEventListener('DOMContentLoaded', () => {
+      initSidebar();
+      openIncident(0);
+    });
+  </script>
+</body>
+</html>
