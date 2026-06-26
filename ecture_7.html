@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creating a Spring Boot REST Controller</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #1a6b72;
+    --teal-dark: #124f54;
+    --teal-light: #e8f4f5;
+    --gold: #c8a84b;
+    --cream: #fdf6ec;
+    --paper: #fffdf9;
+    --ink: #1e1e1e;
+    --muted: #6b6b6b;
+    --border: #d4c9b0;
+    --code-bg: #f5f2ec;
+    --accent: #e85d2a;
+    --green: #3d9970;
+    --red: #e85d2a;
+    --page-width: 820px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #c8bfaf;
+    background-image: repeating-linear-gradient(45deg, #c4baa9 0px, #c4baa9 2px, transparent 2px, transparent 10px);
+    font-family: 'Lato', sans-serif;
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+  #page-container {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    background: var(--paper);
+    padding: 50px 60px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    position: relative;
+  }
+  header {
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+  }
+  .meta-header {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 13px;
+    color: var(--teal);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    color: var(--teal-dark);
+    line-height: 1.2;
+    font-weight: 700;
+  }
+  .intro-text {
+    font-size: 17px;
+    color: var(--muted);
+    margin-top: 15px;
+    font-style: italic;
+  }
+  #toc {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    padding: 25px;
+    margin-bottom: 40px;
+  }
+  #toc h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--teal-dark);
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+  }
+  #toc ul {
+    list-style: none;
+  }
+  #toc li {
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+  #toc a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--gold);
+    transition: color 0.2s;
+  }
+  #toc a:hover {
+    color: var(--teal);
+    border-bottom-style: solid;
+  }
+  .section-block {
+    margin-bottom: 45px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--teal-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  .sec-num {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    background: var(--teal);
+    color: white;
+    padding: 3px 8px;
+    margin-right: 12px;
+    border-radius: 3px;
+    font-weight: 400;
+  }
+  p {
+    margin-bottom: 18px;
+    font-size: 16px;
+    color: #2c2c2c;
+    text-align: justify;
+  }
+  ul {
+    margin-left: 25px;
+    margin-bottom: 18px;
+  }
+  li {
+    margin-bottom: 6px;
+    font-size: 16px;
+  }
+  .highlight-box {
+    background: var(--teal-light);
+    border-left: 4px solid var(--teal);
+    padding: 20px;
+    margin: 25px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .highlight-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--teal-dark);
+    margin-bottom: 8px;
+  }
+  .chip {
+    font-family: 'Source Code Pro', monospace;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    font-size: 13.5px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--teal-dark);
+  }
+  
+  /* Layout Grid Cards for Steps/Exercises */
+  .types-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin: 30px 0;
+  }
+  .type-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--teal);
+    padding: 25px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  }
+  .type-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    color: var(--teal-dark);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .type-meta {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  /* Code Container Formatting */
+  .code-container {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 20px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 25px 0;
+    overflow-x: auto;
+    border-radius: 4px;
+    color: #24292e;
+  }
+  .code-comment { color: #6a737d; font-style: italic; }
+  .code-keyword { color: #d73a49; font-weight: 600; }
+  .code-type { color: #005cc5; font-weight: 600; }
+  .code-string { color: #22863a; }
+  .code-annotation { color: #6f42c1; font-weight: 600; }
+  
+  #footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<div id="page-container">
+
+  <header>
+    <div class="meta-header">Spring Boot Web Architecture Series</div>
+    <h1>Creating a Spring Boot REST Controller</h1>
+    <div class="intro-text">
+      Moving beyond the default error page: setting up project packages, managing server execution, and creating a foundational REST endpoint using core web annotations.
+    </div>
+  </header>
+
+  <nav id="toc">
+    <h2>Table of Contents</h2>
+    <ul>
+      <li><a href="#error-page-context">1. Replacing the Default Whitelabel Error Page</a></li>
+      <li><a href="#package-structure">2. Organizing the Project Package Layer</a></li>
+      <li><a href="#controller-anatomy">3. Anatomy of a REST Controller</a></li>
+      <li><a href="#lab-exercises">4. Laboratory Sandbox Implementation</a></li>
+    </ul>
+  </nav>
+
+  <div id="content-wrapper">
+
+    <section class="section-block" id="error-page-context">
+      <h2 class="section-title"><span class="sec-num">Section 1</span>Replacing the Default Whitelabel Error Page</h2>
+      <p>
+        When initializing a fresh Spring Boot environment without any baseline web routes in place, navigating to the context root causes the embedded server container layer to serve a generic fallback <strong>Whitelabel Error Page</strong>. This indicates that while the underlying network pipeline is listening, no operational pathways match the request address.
+      </p>
+      <p>
+        To transition elements smoothly out of raw error outputs and cleanly capture browser queries, developers implement custom control architecture maps. By introducing a dedicated endpoint layer, the system intercepts web actions directly and substitutes meaningful data output formats.
+      </p>
+    </section>
+
+    <section class="section-block" id="package-structure">
+      <h2 class="section-title"><span class="sec-num">Section 2</span>Organizing the Project Package Layer</h2>
+      <p>
+        To enforce strict architecture boundaries within a workspace setup, target configurations must be cleanly modularized. Before modifying code structures inside your IDE workspace, any active server process running in your environment window should be stopped immediately.
+      </p>
+      <p>
+        Your core structural organization pattern follows a nested approach:
+      </p>
+      <ul>
+        <li><span class="chip">Base Package Layer</span>: The root namespace location (such as <span class="chip">com.example.mycoolapp</span>) housing your primary execution configuration hooks.</li>
+        <li><span class="chip">Web Sub-Package Zone</span>: A separate, clean package sub-folder explicitly declared as <span class="chip">rest</span> (forming <span class="chip">com.example.mycoolapp.rest</span>) reserved exclusively for endpoint handlers.</li>
+      </ul>
+      <div class="highlight-box">
+        <h3>Component Scanning Mechanics</h3>
+        <p>
+          Spring Boot executes automatic component scans cascading down from your primary configuration module. Defining your web classes safely within a nested <span class="chip">.rest</span> directory ensures that the context engine finds, registers, and mounts them cleanly without manual setup.
+        </p>
+      </div>
+    </section>
+
+    <section class="section-block" id="controller-anatomy">
+      <h2 class="section-title"><span class="sec-num">Section 3</span>Anatomy of a REST Controller</h2>
+      <p>
+        Converting an unmapped Java class into an active web routing interface relies on specifying clear, system-facing annotation metadata flags:
+      </p>
+      <p>
+        The <span class="chip">@RestController</span> annotation explicitly targets a class, marking it as a web-accessible component ready to receive incoming payloads. This register layer instructs Spring to serialize standard Java string definitions straight into downstream network streams.
+      </p>
+      <p>
+        To establish explicit bindings, designers introduce a <span class="chip">@GetMapping("/")</span> declaration above specific action blocks. This configuration matches the root forward slash directory, routing queries safely and rendering simple structural messages directly inside terminal browser views.
+      </p>
+    </section>
+
+    <section class="section-block" id="lab-exercises">
+      <h2 class="section-title"><span class="sec-num">Section 4</span>Laboratory Sandbox Implementation</h2>
+      <p>
+        Review the lab implementation exercises below to construct, verify, and run your new REST controller class configuration:
+      </p>
+
+      <div class="types-grid">
+        
+        <div class="type-card" style="border-top-color: var(--teal);">
+          <h3>Exercise 1: Designing the Controller Class <span class="type-meta" style="background: #e8f4f5; color: var(--teal-dark);">Step-by-Step</span></h3>
+          <p><strong>Problem Description:</strong> Under your specialized rest package path, declare a fresh component class file named <span class="chip">FunRestController</span>. Implement foundational code formatting containing standard imports, structural declarations, and an endpoint string return loop matching the script design specifications below:</p>
+          
+          <div class="code-container"><span class="code-keyword">package</span> com.example.mycoolapp.rest;
+
+<span class="code-keyword">import</span> <span class="code-string">org.springframework.web.bind.annotation.GetMapping</span>;
+<span class="code-keyword">import</span> <span class="code-string">org.springframework.web.bind.annotation.RestController</span>;
+
+<span class="code-annotation">@RestController</span>
+<span class="code-keyword">public class</span> <span class="code-type">FunRestController</span> {
+
+    <span class="code-comment">// expose "/" endpoint that will simply return "Hello World"</span>
+    <span class="code-annotation">@GetMapping</span>(<span class="code-string">"/"</span>)
+    <span class="code-keyword">public</span> <span class="code-type">String</span> <span class="code-keyword">sayHello</span>() {
+        <span class="code-keyword">return</span> <span class="code-string">"Hello World!"</span>;
+    }
+}</div>
+        </div>
+
+        <div class="type-card" style="border-top-color: var(--green);">
+          <h3>Exercise 2: System Boot &amp; Verification <span class="type-meta" style="background: #eaf6f0; color: var(--green);">Validation</span></h3>
+          <p><strong>Deployment Checklist:</strong> Compile your source workspace, restart the server framework runtime application instance, and inspect your target development outputs:</p>
+          <ul>
+            <li>Verify your IDE terminal output reads that the application container is up and running cleanly.</li>
+            <li>Launch a browser panel and navigate directly toward your host route domain link.</li>
+            <li>Confirm that the previous error window is replaced by your crisp, raw <span class="chip">"Hello World!"</span> textual string response payload.</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <div id="footer">
+    <span>Python &amp; Java Framework Educational Series</span>
+  </div>
+
+</div>
+
+</body>
+</html>
