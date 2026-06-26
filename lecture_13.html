@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Application Properties, Static Content &amp; Template Engines</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #1a6b72;
+    --teal-dark: #124f54;
+    --teal-light: #e8f4f5;
+    --gold: #c8a84b;
+    --cream: #fdf6ec;
+    --paper: #fffdf9;
+    --ink: #1e1e1e;
+    --muted: #6b6b6b;
+    --border: #d4c9b0;
+    --code-bg: #f5f2ec;
+    --accent: #e85d2a;
+    --green: #3d9970;
+    --red: #e85d2a;
+    --page-width: 820px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #c8bfaf;
+    background-image: repeating-linear-gradient(45deg, #c4baa9 0px, #c4baa9 2px, transparent 2px, transparent 10px);
+    font-family: 'Lato', sans-serif;
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+  #page-container {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    background: var(--paper);
+    padding: 50px 60px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    position: relative;
+  }
+  header {
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+  }
+  .meta-header {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 13px;
+    color: var(--teal);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    color: var(--teal-dark);
+    line-height: 1.2;
+    font-weight: 700;
+  }
+  .intro-text {
+    font-size: 17px;
+    color: var(--muted);
+    margin-top: 15px;
+    font-style: italic;
+  }
+  #toc {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    padding: 25px;
+    margin-bottom: 40px;
+  }
+  #toc h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--teal-dark);
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+  }
+  #toc ul {
+    list-style: none;
+  }
+  #toc li {
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+  #toc a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--gold);
+    transition: color 0.2s;
+  }
+  #toc a:hover {
+    color: var(--teal);
+    border-bottom-style: solid;
+  }
+  .section-block {
+    margin-bottom: 45px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--teal-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  .sec-num {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    background: var(--teal);
+    color: white;
+    padding: 3px 8px;
+    margin-right: 12px;
+    border-radius: 3px;
+    font-weight: 400;
+  }
+  p {
+    margin-bottom: 18px;
+    font-size: 16px;
+    color: #2c2c2c;
+    text-align: justify;
+  }
+  ul {
+    margin-left: 25px;
+    margin-bottom: 18px;
+  }
+  li {
+    margin-bottom: 6px;
+    font-size: 16px;
+  }
+  .highlight-box {
+    background: var(--teal-light);
+    border-left: 4px solid var(--teal);
+    padding: 20px;
+    margin: 25px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .highlight-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--teal-dark);
+    margin-bottom: 8px;
+  }
+  .chip {
+    font-family: 'Source Code Pro', monospace;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    font-size: 13.5px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--teal-dark);
+  }
+  
+  /* Layout Grid Cards */
+  .types-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin: 30px 0;
+  }
+  @media (min-width: 650px) {
+    .types-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .type-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--teal);
+    padding: 25px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  }
+  .type-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    color: var(--teal-dark);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .type-meta {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 400;
+  }
+
+  .code-container {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 20px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 25px 0;
+    overflow-x: auto;
+    border-radius: 4px;
+    color: #24292e;
+  }
+  .code-comment { color: #6a737d; font-style: italic; }
+  .code-keyword { color: #d73a49; font-weight: 600; }
+  .code-annotation { color: #6f42c1; font-weight: 600; }
+  .code-tag { color: #005cc5; }
+  .code-value { color: #22863a; }
+  
+  #footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<div id="page-container">
+
+  <header>
+    <div class="meta-header">Spring Boot Web Architecture Series</div>
+    <h1>Externalized Configurations &amp; Dynamic Web Assets</h1>
+    <div class="intro-text">
+      An architectural deep-dive into application properties injection via @Value, static web asset routing limits, template execution engines, and foundational unit testing targets.
+    </div>
+  </header>
+
+  <nav id="toc">
+    <h2>Table of Contents</h2>
+    <ul>
+      <li><a href="#properties-file">1. The Magic Configuration: application.properties</a></li>
+      <li><a href="#value-injection">2. Property Injection Mechanics via @Value</a></li>
+      <li><a href="#static-content">3. Static Routing Paths vs. The Webapp Jar Pitfall</a></li>
+      <li><a href="#template-testing">4. Auto-Configured Template Engines &amp; Unit Test Baselines</a></li>
+    </ul>
+  </nav>
+
+  <div id="content-wrapper">
+
+    <section class="section-block" id="properties-file">
+      <h2 class="section-title"><span class="sec-num">Section 1</span>The Magic Configuration: application.properties</h2>
+      <p>
+        By default, Spring Boot automatically discovers and processes a built-in configuration file named <strong>application.properties</strong>. This file acts as a designated repository for framework adjustments and custom parameters. It is initialized automatically at the root of the <span class="chip">src/main/resources</span> folder during initial project generation.
+      </p>
+      <p>
+        Developers use this properties file to override standard framework defaults or declare bespoke key-value configurations. For instance, modifying the standard embedded web engine port from its default listener setting requires an explicit key definition:
+      </p>
+
+      <div class="code-container">
+        <span class="code-comment"># Overriding the default embedded container server listening port (8080)</span><br>
+        server.port=<span class="code-value">8585</span><br><br>
+        
+        <span class="code-comment"># Declaring custom application environment properties</span><br>
+        coach.name=<span class="code-value">Mickey Mouse</span><br>
+        coach.team=<span class="code-value">Restful Seekers</span>
+      </div>
+    </section>
+
+    <section class="section-block" id="value-injection">
+      <h2 class="section-title"><span class="sec-num">Section 2</span>Property Injection Mechanics via @Value</h2>
+      <p>
+        To read properties into active class structures, Spring Boot provides a dependency expression injection annotation known as <strong>@Value</strong>. This allows environmental configurations to be seamlessly assigned to internal private field boundaries at runtime.
+      </p>
+      
+      
+
+      <p>
+        The injection architecture relies on standard Spring Expression Language (SpEL) syntax, wrapping targeted identifiers within a <span class="chip">${property.key}</span> string literal block. Review the rest controller implementation pattern below:
+      </p>
+
+      <div class="code-container">
+        <span class="code-keyword">package</span> com.luv2code.springboot.demo.rest;<br><br>
+        
+        <span class="code-keyword">import</span> org.springframework.beans.factory.annotation.Value;<br>
+        <span class="code-keyword">import</span> org.springframework.web.bind.annotation.RestController;<br><br>
+        
+        <span class="code-annotation">@RestController</span><br>
+        <span class="code-keyword">public class</span> FunRestController {<br><br>
+        
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Injecting configured property boundaries into live field contexts</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-annotation">@Value</span>(<span class="code-value">"${coach.name}"</span>)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">private</span> String coachName;<br><br>
+        
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-annotation">@Value</span>(<span class="code-value">"${coach.team}"</span>)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">private</span> String teamName;<br><br>
+        
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Core REST Endpoints consuming fields would follow here...</span><br>
+        }
+      </div>
+    </section>
+
+    <section class="section-block" id="static-content">
+      <h2 class="section-title"><span class="sec-num">Section 3</span>Static Routing Paths vs. The Webapp Jar Pitfall</h2>
+      <p>
+        For client-side web assets, Spring Boot configures automated resource mapping rules to serve file structures without requiring custom controller logic. It scans the <strong>/static</strong> directory layer located securely inside the <span class="chip">src/main/resources</span> perimeter.
+      </p>
+      <p>
+        Typical assets suited for this directory pattern include:
+      </p>
+      <ul>
+        <li>Static interface documents (<span class="chip">.html</span> markup files).</li>
+        <li>Global stylesheet presentations (<span class="chip">.css</span> definitions).</li>
+        <li>Client script behaviors (<span class="chip">.js</span> execution libraries).</li>
+        <li>Binary media assets (images, icons, and downloadable <span class="chip">.pdf</span> manuals).</li>
+      </ul>
+
+      <div class="highlight-box" style="border-left-color: var(--red); background: #fdf3f2;">
+        <h3 style="color: var(--red);">Critical Pitfall Warning: Avoid /src/main/webapp under JAR Packaging</h3>
+        <p>
+          While <span class="chip">/src/main/webapp</span> is a standard layout path in traditional Maven web setups, it <strong>only works with WAR deployment packaging architectures</strong>. If your active project uses Spring Boot's standard, modern <span class="chip">.jar</span> packaging, this folder will be silently ignored by the build engine. Bypassing this rule can cause assets to go missing and result in hours of frustrating layout troubleshooting. Keep all asset files inside the resource path boundaries instead.
+        </p>
+      </div>
+    </section>
+
+    <section class="section-block" id="template-testing">
+      <h2 class="section-title"><span class="sec-num">Section 4</span>Auto-Configured Template Engines &amp; Unit Test Baselines</h2>
+      <p>
+        When building dynamic user-facing layers that depend on live server data models, Spring Boot provides built-in auto-configuration bridges for several popular view-rendering tools.
+      </p>
+      <p>
+        These views are pulled automatically from the standard template root folder: <span class="chip">src/main/resources/templates</span>. The auto-configured view layers include:
+      </p>
+      <ul>
+        <li><strong>Thymeleaf:</strong> A highly popular, modern template tool optimized for parsing natural, standards-compliant HTML environments.</li>
+        <li><strong>FreeMarker:</strong> A robust, mature presentation engine utilizing standalone text macro generation paradigms.</li>
+        <li><strong>Mustache:</strong> A logic-less, lightweight token interpolation view script layout.</li>
+      </ul>
+
+      <p>
+        Finally, your initialized project structure includes a foundational automated verification class located within the isolated test tree path: <span class="chip">src/test/java/com/luv2code/springboot/demo/MyCoolApplicationTests.java</span>.
+      </p>
+      
+      <p>
+        This primary setup script comes pre-configured with the core test container annotations. It validates that your internal Spring environment boots up correctly and provides a clean, pre-configured canvas where you can add your custom business logic tests.
+      </p>
+    </section>
+
+    <section class="section-block">
+      <p>
+        This lesson completes our introductory exploration of the foundational files and workspace structures generated by the Spring Initializr tool. Having analyzed properties injection, asset path limits, and template layouts, we are well-prepared to move into deep operational layers. In our next section, we will study core configuration profiles, look into application properties, and examine how properties are loaded in enterprise-grade server clusters.
+      </p>
+    </section>
+
+  </div>
+
+  <div id="footer">
+    <span>Python &amp; Java Framework Educational Series</span>
+  </div>
+
+</div>
+
+</body>
+</html>
