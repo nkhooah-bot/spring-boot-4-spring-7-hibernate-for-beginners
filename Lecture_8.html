@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 22 – Exploring Ecosystem Extensions: Spring Projects</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #1a6b72;
+    --teal-dark: #124f54;
+    --teal-light: #e8f4f5;
+    --gold: #c8a84b;
+    --cream: #fdf6ec;
+    --paper: #fffdf9;
+    --ink: #1e1e1e;
+    --muted: #6b6b6b;
+    --border: #d4c9b0;
+    --code-bg: #f5f2ec;
+    --accent: #e85d2a;
+    --green: #3d9970;
+    --red: #e85d2a;
+    --page-width: 820px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #c8bfaf;
+    background-image: repeating-linear-gradient(45deg, #c4baa9 0px, #c4baa9 2px, transparent 2px, transparent 10px);
+    font-family: 'Lato', sans-serif;
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+  #page-container {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    background: var(--paper);
+    padding: 50px 60px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    position: relative;
+  }
+  header {
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+  }
+  .meta-header {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 13px;
+    color: var(--teal);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    color: var(--teal-dark);
+    line-height: 1.2;
+    font-weight: 700;
+  }
+  .intro-text {
+    font-size: 17px;
+    color: var(--muted);
+    margin-top: 15px;
+    font-style: italic;
+  }
+  #toc {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    padding: 25px;
+    margin-bottom: 40px;
+  }
+  #toc h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--teal-dark);
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+  }
+  #toc ul {
+    list-style: none;
+  }
+  #toc li {
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+  #toc a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--gold);
+    transition: color 0.2s;
+  }
+  #toc a:hover {
+    color: var(--teal);
+    border-bottom-style: solid;
+  }
+  .section-block {
+    margin-bottom: 45px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--teal-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  .sec-num {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    background: var(--teal);
+    color: white;
+    padding: 3px 8px;
+    margin-right: 12px;
+    border-radius: 3px;
+    font-weight: 400;
+  }
+  p {
+    margin-bottom: 18px;
+    font-size: 16px;
+    color: #2c2c2c;
+    text-align: justify;
+  }
+  ul {
+    margin-left: 25px;
+    margin-bottom: 18px;
+  }
+  li {
+    margin-bottom: 6px;
+    font-size: 16px;
+  }
+  .highlight-box {
+    background: var(--teal-light);
+    border-left: 4px solid var(--teal);
+    padding: 20px;
+    margin: 25px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .highlight-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--teal-dark);
+    margin-bottom: 8px;
+  }
+  .chip {
+    font-family: 'Source Code Pro', monospace;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    font-size: 13.5px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--teal-dark);
+  }
+  
+  /* Layout Grid Cards */
+  .types-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin: 30px 0;
+  }
+  @media (min-width: 650px) {
+    .types-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .type-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--teal);
+    padding: 25px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  }
+  .type-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    color: var(--teal-dark);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .type-meta {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 400;
+  }
+  
+  #footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<div id="page-container">
+
+  <header>
+    <div class="meta-header">Spring Boot Web Architecture Series</div>
+    <h1>Chapter 22: Exploring Ecosystem Extensions: Spring Projects</h1>
+    <div class="intro-text">
+      An architectural overview of modern Spring project modules, navigating ecosystem dependencies, and evaluating optional framework building blocks for enterprise systems.
+    </div>
+  </header>
+
+  <nav id="toc">
+    <h2>Table of Contents</h2>
+    <ul>
+      <li><a href="#modular-concept">1. The Core Extension Paradigm</a></li>
+      <li><a href="#ecosystem-modules">2. Essential Spring Project Ecosystem Catalog</a></li>
+      <li><a href="#documentation-portal">3. Navigating the Official Ecosystem Portal</a></li>
+    </ul>
+  </nav>
+
+  <div id="content-wrapper">
+
+    <section class="section-block" id="modular-concept">
+      <h2 class="section-title"><span class="sec-num">Section 1</span>The Core Extension Paradigm</h2>
+      <p>
+        The power of the Spring framework lies within its highly modular design strategy. Rather than maintaining a rigid monolith containing every conceivable integration layer, the architecture features specialized standalone sub-systems called <strong>Spring Projects</strong>.
+      </p>
+      <p>
+        These projects operate as structural modular extensions engineered directly on top of the base core framework layers. This configuration provides total flexibility across workspaces: systems remain lean because engineering groups selectively import only what their specific environment rules demand, bypassing unnecessary libraries.
+      </p>
+    </section>
+
+    <section class="section-block" id="ecosystem-modules">
+      <h2 class="section-title"><span class="sec-num">Section 2</span>Essential Spring Project Ecosystem Catalog</h2>
+      <p>
+        The global developer community maintains a wide array of specialized production modules to tackle routine cloud, database, and infrastructure challenges:
+      </p>
+
+      <div class="types-grid">
+        
+        <div class="type-card" style="border-top-color: var(--teal);">
+          <h3>Spring Cloud <span class="type-meta" style="background: var(--teal-light); color: var(--teal-dark);">Distributed Systems</span></h3>
+          <p>Provides robust frameworks to configure, manage, and coordinate microservice setups. It coordinates structural distributed items like service registration matrices, circuit breakers, and dynamic runtime property discovery mechanisms safely across web setups.</p>
+        </div>
+
+        <div class="type-card" style="border-top-color: var(--green);">
+          <h3>Spring Data <span class="type-meta" style="background: #eaf6f0; color: var(--green);">Persistence Layer</span></h3>
+          <p>Unifies access patterns for relational database connectors alongside non-relational modern engines. It provides automated interface maps that reduce boilerplate repository logic across underlying SQL, NoSQL, and column store backends.</p>
+        </div>
+
+        <div class="type-card" style="border-top-color: var(--accent);">
+          <h3>Spring Security <span class="type-meta" style="background: #fdf2ee; color: var(--accent);">Authentication</span></h3>
+          <p>A comprehensive system engineered to deliver authentication, secure authorization mapping, and defensive framework hooks against vulnerabilities like cross-site script queries, ensuring absolute backend protection.</p>
+        </div>
+
+        <div class="type-card" style="border-top-color: var(--gold);">
+          <h3>Spring Batch <span class="type-meta" style="background: var(--cream); color: #8a6d1c;">Data Processing</span></h3>
+          <p>Engineered for high-volume background data execution routines. It manages crucial automation sequences including multi-tier ETL workflows, parsing continuous file sets, recording transaction check-points, and tracking job statistics.</p>
+        </div>
+
+        <div class="type-card" style="border-top-color: #3174b5;">
+          <h3>Spring Web Services <span class="type-meta" style="background: #e6f0fa; color: #3174b5;">API Standards</span></h3>
+          <p>A contract-first engine focused on deploying highly integrated, compliant web communications. It simplifies generating secure, reliable validation formats for both RESTful resources and complex SOAP interactions.</p>
+        </div>
+
+        <div class="type-card" style="border-top-color: var(--muted);">
+          <h3>Spring LDAP <span class="type-meta" style="background: #f1f1f1; color: var(--muted);">Directory Services</span></h3>
+          <p>Streamlines interactions with corporate directory structures based on basic Lightweight Directory Access Protocol frameworks, reducing context lookups and structural mapping routines.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section-block" id="documentation-portal">
+      <h2 class="section-title"><span class="sec-num">Section 3</span>Navigating the Official Ecosystem Portal</h2>
+      <p>
+        Because the framework ecosystem stays highly active and changes rapidly, the definitive catalog hub for evaluating active projects remains the official portal at <a href="https://spring.io" target="_blank">spring.io</a>.
+      </p>
+      <p>
+        Navigating directly toward the primary <strong>Projects Tab</strong> loads an index containing concise summary descriptions of all validated production modules. Selecting individual project tabs exposes deep-dive technical reference document matrices, dependency configuration snippets, and production-ready code samples.
+      </p>
+      <div class="highlight-box">
+        <h3>Architecture Integration Guidance</h3>
+        <p>
+          Keep in mind that these modular projects remain completely optional. When scoping new systems, review individual module profiles on the ecosystem dashboard to ensure you import precise, high-performance features that align with your architecture rules.
+        </p>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <p>
+        In this conceptual overview, we explored the extensible architecture of optional Spring Project modules and cataloged key integrations. In our upcoming chapter, we will return to active code development, exploring properties profiles, handling runtime configuration changes, and structuring flexible parameters inside development sandboxes.
+      </p>
+    </section>
+
+  </div>
+
+  <div id="footer">
+    <span>Python &amp; Java Framework Educational Series</span>
+    <span>Section 1 · Lecture Notes 22</span>
+  </div>
+
+</div>
+
+</body>
+</html>
