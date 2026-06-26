@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 24 – Maven Standard Directory Structure &amp; Portability</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Code+Pro:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #1a6b72;
+    --teal-dark: #124f54;
+    --teal-light: #e8f4f5;
+    --gold: #c8a84b;
+    --cream: #fdf6ec;
+    --paper: #fffdf9;
+    --ink: #1e1e1e;
+    --muted: #6b6b6b;
+    --border: #d4c9b0;
+    --code-bg: #f5f2ec;
+    --accent: #e85d2a;
+    --green: #3d9970;
+    --red: #e85d2a;
+    --page-width: 820px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #c8bfaf;
+    background-image: repeating-linear-gradient(45deg, #c4baa9 0px, #c4baa9 2px, transparent 2px, transparent 10px);
+    font-family: 'Lato', sans-serif;
+    color: var(--ink);
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+  #page-container {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    background: var(--paper);
+    padding: 50px 60px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    position: relative;
+  }
+  header {
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+  }
+  .meta-header {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 13px;
+    color: var(--teal);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    color: var(--teal-dark);
+    line-height: 1.2;
+    font-weight: 700;
+  }
+  .intro-text {
+    font-size: 17px;
+    color: var(--muted);
+    margin-top: 15px;
+    font-style: italic;
+  }
+  #toc {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    padding: 25px;
+    margin-bottom: 40px;
+  }
+  #toc h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--teal-dark);
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+  }
+  #toc ul {
+    list-style: none;
+  }
+  #toc li {
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+  #toc a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--gold);
+    transition: color 0.2s;
+  }
+  #toc a:hover {
+    color: var(--teal);
+    border-bottom-style: solid;
+  }
+  .section-block {
+    margin-bottom: 45px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--teal-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  .sec-num {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    background: var(--teal);
+    color: white;
+    padding: 3px 8px;
+    margin-right: 12px;
+    border-radius: 3px;
+    font-weight: 400;
+  }
+  p {
+    margin-bottom: 18px;
+    font-size: 16px;
+    color: #2c2c2c;
+    text-align: justify;
+  }
+  ul {
+    margin-left: 25px;
+    margin-bottom: 18px;
+  }
+  li {
+    margin-bottom: 6px;
+    font-size: 16px;
+  }
+  .highlight-box {
+    background: var(--teal-light);
+    border-left: 4px solid var(--teal);
+    padding: 20px;
+    margin: 25px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .highlight-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--teal-dark);
+    margin-bottom: 8px;
+  }
+  .chip {
+    font-family: 'Source Code Pro', monospace;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    font-size: 13.5px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--teal-dark);
+  }
+  
+  /* Layout Grid Cards */
+  .types-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin: 30px 0;
+  }
+  @media (min-width: 650px) {
+    .types-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .type-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--teal);
+    padding: 25px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  }
+  .type-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    color: var(--teal-dark);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .type-meta {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 400;
+  }
+
+  /* Tree Diagram Visualization */
+  .tree-container {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 25px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 25px 0;
+    border-radius: 4px;
+    color: #24292e;
+  }
+  .tree-folder { color: var(--teal-dark); font-weight: 600; }
+  .tree-file { color: var(--accent); }
+  
+  #footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<div id="page-container">
+
+  <header>
+    <div class="meta-header">Spring Boot Web Architecture Series</div>
+    <h1>Chapter 24: Maven Standard Directory Structure &amp; Portability</h1>
+    <div class="intro-text">
+      Overcoming custom project fragmentation: an analysis of standard directories, asset placement rules, cross-IDE portability, and onboarding velocity.
+    </div>
+  </header>
+
+  <nav id="toc">
+    <h2>Table of Contents</h2>
+    <ul>
+      <li><a href="#structural-problem">1. The Fragmentation Problem vs. Conventions</a></li>
+      <li><a href="#directory-blueprint">2. Blueprint: Standard Directory Structure Layout</a></li>
+      <li><a href="#asset-mapping">3. Target Asset Mapping &amp; Package Visibility</a></li>
+      <li><a href="#ide-portability">4. Cross-IDE Support and Onboarding Advantages</a></li>
+    </ul>
+  </nav>
+
+  <div id="content-wrapper">
+
+    <section class="section-block" id="structural-problem">
+      <h2 class="section-title"><span class="sec-num">Section 1</span>The Fragmentation Problem vs. Conventions</h2>
+      <p>
+        In traditional legacy project setups, development groups frequently spend time defining unique, ad-hoc file directory systems. This lack of standard layout conventions can present a barrier for incoming engineering talent, who must spend their initial onboarding cycles navigating unfamiliar folder hierarchies.
+      </p>
+      <p>
+        Apache Maven resolves this layout fragmentation by enforcing a highly predictable, standardized directory map across software systems. By adopting a standard structure, arbitrary layout decisions are eliminated, making sure every enterprise project remains structured and accessible to newcomers right from day one.
+      </p>
+    </section>
+
+    <section class="section-block" id="directory-blueprint">
+      <h2 class="section-title"><span class="sec-num">Section 2</span>Blueprint: Standard Directory Structure Layout</h2>
+      <p>
+        Every compliant Maven project features a well-defined blueprint path arrangement starting right from the root workspace directory folder. Review the structured directory framework diagram below:
+      </p>
+
+      <div class="tree-container">
+        <span class="tree-folder">my-super-cool-app/</span><br>
+        ├── <span class="tree-file">pom.xml</span> <span style="color: var(--muted); font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Project configuration blueprint</span><br>
+        ├── <span class="tree-folder">src/</span><br>
+        │   ├── <span class="tree-folder">main/</span><br>
+        │   │   ├── <span class="tree-folder">java/</span> <span style="color: var(--muted); font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Production Java source classes</span><br>
+        │   │   ├── <span class="tree-folder">resources/</span> <span style="color: var(--muted); font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Properties, application configs</span><br>
+        │   │   └── <span class="tree-folder">webapp/</span> <span style="color: var(--muted); font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Web assets (JSP, CSS, Images)</span><br>
+        │   └── <span class="tree-folder">test/</span><br>
+        │       ├── <span class="tree-folder">java/</span> <span style="color: var(--muted); font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Testing classes &amp; unit test code</span><br>
+        │       └── <span class="tree-folder">resources/</span> <span style="color: var(--muted); font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Unit test configurations</span><br>
+        └── <span class="tree-folder">target/</span> <span style="color: var(--muted); font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Generated artifacts and compiled code</span>
+      </div>
+    </section>
+
+    <section class="section-block" id="asset-mapping">
+      <h2 class="section-title"><span class="sec-num">Section 3</span>Target Asset Mapping &amp; Package Visibility</h2>
+      <p>
+        Managing structured files within this standard grid framework requires applying clean segregation across different types of system assets:
+      </p>
+
+      <div class="types-grid">
+        
+        <div class="type-card" style="border-top-color: var(--teal);">
+          <h3>Java Codebases <span class="type-meta" style="background: var(--teal-light); color: var(--teal-dark);">/src/main/java</span></h3>
+          <p>Houses production-ready Java application source components. This folder structure mirrors your official package naming coordinates (e.g., <span class="chip">com.love2code.springboot.demo.rest</span>) and stores individual <span class="chip">.java</span> class files securely.</p>
+        </div>
+
+        <div class="type-card" style="border-top-color: var(--gold);">
+          <h3>System Resources <span class="type-meta" style="background: var(--cream); color: #8a6d1c;">/src/main/resources</span></h3>
+          <p>Reserved for standalone environmental profiles, properties configuration files, database credentials, and generic operational templates loaded into context streams by the background server during boot sequences.</p>
+        </div>
+
+        <div class="type-card" style="border-top-color: var(--accent);">
+          <h3>Web App Frontends <span class="type-meta" style="background: #fdf2ee; color: var(--accent);">/src/main/webapp</span></h3>
+          <p>Dedicated to traditional browser-facing layout configurations. It holds user interface assets, including JavaServer Pages (<span class="chip">.jsp</span>), global cascading style files (<span class="chip">.css</span>), image sets, and client-side web metadata schemas.</p>
+        </div>
+
+        <div class="type-card" style="border-top-color: var(--green);">
+          <h3>Isolated Testing Files <span class="type-meta" style="background: #eaf6f0; color: var(--green);">/src/test</span></h3>
+          <p>Keeps automated unit verification scripts and test properties files isolated from the core production code. This separation ensures testing assets never leak into production compilation bundles.</p>
+        </div>
+
+      </div>
+
+      <div class="highlight-box">
+        <h3>The Destination Matrix (/target)</h3>
+        <p>
+          The <span class="chip">/target</span> directory serves as the output hub for all automated build operations. This folder acts as a build destination zone: it houses compiled bytecode classes, processing logs, and generated delivery formats (like <span class="chip">.jar</span> or <span class="chip">.war</span> archives) generated by Maven lifecycle tasks.
+        </p>
+      </div>
+    </section>
+
+    <section class="section-block" id="ide-portability">
+      <h2 class="section-title"><span class="sec-num">Section 4</span>Cross-IDE Support and Onboarding Advantages</h2>
+      <p>
+        Because Maven uses a standard folder hierarchy and relies on a unified <span class="chip">pom.xml</span> descriptor file, it offers incredible <strong>cross-IDE portability</strong>. All major integrated developer environments—including Eclipse, IntelliJ IDEA, and NetBeans—include native support for parsing, compiling, and running standard Maven layouts out of the box.
+      </p>
+      <p>
+        This level of standardization brings key practical advantages to development teams:
+      </p>
+      <ul>
+        <li><strong>Tooling Portability:</strong> Team members are free to choose their preferred IDE. A project initialized in NetBeans can be shared and opened seamlessly in Eclipse or IntelliJ without breaking paths or losing structural metadata.</li>
+        <li><strong>Eliminating Classpath Headaches:</strong> Dependency management handles classpaths automatically behind the scenes, eliminating manual path issues and allowing engineers to focus fully on code features.</li>
+        <li><strong>Onboarding Velocity:</strong> New developers joining an enterprise team can become productive almost instantly. Because the project layout is completely predictable, they can fetch remote libraries and run the system with minimal local onboarding friction.</li>
+      </ul>
+    </section>
+
+    <section class="section-block">
+      <p>
+        In this lesson, we analyzed how Maven uses standardized layout templates to make projects highly portable across different IDEs and speed up onboarding workflows. In our upcoming chapter, we will look into the details of the central <span class="chip">pom.xml</span> schema file, exploring parent inheritance trees, tracking individual artifact groups, and custom-tuning project dependency settings in real-time.
+      </p>
+    </section>
+
+  </div>
+
+  <div id="footer">
+    <span>Python &amp; Java Framework Educational Series</span>
+    <span>Section 1 · Lecture Notes 24</span>
+  </div>
+
+</div>
+
+</body>
+</html>
